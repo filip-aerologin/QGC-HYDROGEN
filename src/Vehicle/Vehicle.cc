@@ -70,6 +70,7 @@ const char* Vehicle::_batteryFactGroupName =    "battery";
 const char* Vehicle::_windFactGroupName =       "wind";
 const char* Vehicle::_vibrationFactGroupName =  "vibration";
 const char* Vehicle::_temperatureFactGroupName = "temperature";
+const char* Vehicle::_hydrogenFactGroupName =   "hydrogen";
 
 Vehicle::Vehicle(LinkInterface*             link,
                  int                        vehicleId,
@@ -180,6 +181,7 @@ Vehicle::Vehicle(LinkInterface*             link,
     , _windFactGroup(this)
     , _vibrationFactGroup(this)
     , _temperatureFactGroup(this)
+    , _hydrogenFactGroup(this)
 {
     _addLink(link);
 
@@ -353,6 +355,7 @@ Vehicle::Vehicle(MAV_AUTOPILOT              firmwareType,
     , _batteryFactGroup(this)
     , _windFactGroup(this)
     , _vibrationFactGroup(this)
+    , _hydrogenFactGroup(this)
 {
     _commonInit();
     _firmwarePlugin->initializeVehicle(this);
@@ -411,6 +414,7 @@ void Vehicle::_commonInit(void)
     _addFactGroup(&_windFactGroup,      _windFactGroupName);
     _addFactGroup(&_vibrationFactGroup, _vibrationFactGroupName);
     _addFactGroup(&_temperatureFactGroup, _temperatureFactGroupName);
+    _addFactGroup(&_hydrogenFactGroup,    _hydrogenFactGroupName);
 
     // Add firmware-specific fact groups, if provided
     QMap<QString, FactGroup*>* fwFactGroups = _firmwarePlugin->factGroups();
@@ -696,6 +700,14 @@ void Vehicle::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t mes
     case MAVLINK_MSG_ID_WIND:
         _handleWind(message);
         break;
+
+    case MAVLINK_MSG_ID_HYDROGEN:
+        _handleHydro(message);
+        break;
+
+    case MAVLINK_MSG_ID_HYDROGEN_CONTROL:
+        _handleHydroControl(message);
+        
     }
 
     // This must be emitted after the vehicle processes the message. This way the vehicle state is up to date when anyone else
@@ -1130,6 +1142,7 @@ void Vehicle::_handleHomePosition(mavlink_message_t& message)
 
 void Vehicle::_handleHeartbeat(mavlink_message_t& message)
 {
+
     if (message.compid != _defaultComponentId) {
         return;
     }
@@ -3350,6 +3363,128 @@ if (!detailedSearch) {
     }
 }
 
+//Hydrogen calculated
+
+float deltaEnegry;
+bool k = true;
+int ticks = 0;
+float average = 0;
+float energyConsumed  = 0;
+
+void Vehicle::startHydro() {
+    mavlink_message_t msg;
+    mavlink_msg_hydrogen_control_pack_chan(_mavlink->getSystemId(),
+                                   _mavlink->getComponentId(),
+                                   priorityLink()->mavlinkChannel(),
+                                   &msg,
+                                   1,
+                                   0
+                                    );
+    sendMessageOnLink(priorityLink(), msg);
+}
+
+void Vehicle::stopHydro() {
+    mavlink_message_t msg;
+    mavlink_msg_hydrogen_control_pack_chan(_mavlink->getSystemId(),
+                                   _mavlink->getComponentId(),
+                                   priorityLink()->mavlinkChannel(),
+                                   &msg,
+                                   0,
+                                   0
+                                    );
+    sendMessageOnLink(priorityLink(), msg);
+}
+
+void Vehicle::crashHydro() {
+     mavlink_message_t msg;
+    mavlink_msg_hydrogen_control_pack_chan(_mavlink->getSystemId(),
+                                   _mavlink->getComponentId(), 
+                                   priorityLink()->mavlinkChannel(),
+                                   &msg,
+                                   1,
+                                   1
+                                    );
+    sendMessageOnLink(priorityLink(), msg);
+}
+void Vehicle::_handleHydroControl(mavlink_message_t &message) {
+    mavlink_hydrogen_control_t hydro;
+    mavlink_msg_hydrogen_control_decode(&message, &hydro);
+    qWarning() << "HYDROSTART: " << hydro.start_hydro << endl;
+    qWarning() << "HYDROCRASH: " << hydro.system_crash << endl;
+}
+void Vehicle::_handleHydro (mavlink_message_t& message) {
+    mavlink_hydrogen_t hydro;
+    mavlink_msg_hydrogen_decode(&message, &hydro);
+    //Data from drone
+    float voltageHydro = hydro.stack_voltage;
+    float currentHydro = hydro.stack_current;
+    float voltageBattery = hydro.battery_voltage;
+    float tempHydro = hydro.stack_temp;
+    float pressureHydro = hydro.tank_pressure;
+    float massUav = hydro.uav_mass;
+
+    // Override values
+    //tempHydro = 293;
+    //pressureHydro = 301  ; //bar
+    //voltageHydro = 4.2 * 8;
+    //currentHydro = 60;
+
+    //Data constants
+    float RH2 = 4157;
+    float Wop = 120000000; // J/kg
+    float Volume = 0.018; // m3
+    float Z = pressureHydro * 0.000642 + 0.9991;
+    float effElectric = 0.5; // Change after obtaining proper model
+    //Critical Conditions
+    //float pMin = 20; //bar
+    
+    
+    //Set Values -> JSON
+    _hydrogenFactGroup.voltageHydro()->setRawValue(voltageHydro);
+    _hydrogenFactGroup.currentHydro()->setRawValue(currentHydro);
+    _hydrogenFactGroup.voltageBatt()->setRawValue(voltageBattery);
+    _hydrogenFactGroup.pressureHydro()->setRawValue(pressureHydro);
+    _hydrogenFactGroup.massUav()->setRawValue(massUav);
+    _hydrogenFactGroup.tempHydro()->setRawValue(tempHydro);
+
+
+    float massHydro, energyHydro, powerElectric;
+    
+    // Hydrogen mass calculation
+    massHydro = ((pressureHydro* 100000 * Volume)/(Z*RH2*tempHydro));
+
+    //Energia chemiczna
+    energyHydro = massHydro * Wop * effElectric;
+
+    //Energia elektryczna
+    powerElectric = voltageHydro * currentHydro;
+
+
+    if (k) {
+        deltaEnegry = energyHydro;
+        qWarning() << "ENERGY DATA: " << deltaEnegry << endl;
+        k = false;
+    }
+
+// Suma mocy chwilowej (co sekundę) -> Energia elektyczna (P * t )
+      energyConsumed = energyConsumed + powerElectric;
+      deltaEnegry = energyHydro - energyConsumed;
+
+
+// Delta uśredniona
+      ticks++;
+      average =energyConsumed / ticks;
+
+      float timeLeft = deltaEnegry / (average) ; // seconds (ticks -> 1Hz loop)
+
+// Set time left value
+      if (timeLeft <= 0) {
+          _hydrogenFactGroup.timeLeft()->setRawValue(0);
+      }
+      _hydrogenFactGroup.timeLeft()->setRawValue(timeLeft);
+
+}
+
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 
@@ -3462,4 +3597,50 @@ VehicleTemperatureFactGroup::VehicleTemperatureFactGroup(QObject* parent)
     _temperature1Fact.setRawValue      (std::numeric_limits<float>::quiet_NaN());
     _temperature2Fact.setRawValue      (std::numeric_limits<float>::quiet_NaN());
     _temperature3Fact.setRawValue      (std::numeric_limits<float>::quiet_NaN());
+}
+
+const char* VehicleHydrogenFactGroup::_voltageHydroFactName =              "voltageHydro";
+const char* VehicleHydrogenFactGroup::_currentHydroFactName =              "currentHydro";
+const char* VehicleHydrogenFactGroup::_voltageBattFactName =               "voltageBatt";
+const char* VehicleHydrogenFactGroup::_pressureHydroFactName =             "pressureHydro";
+const char* VehicleHydrogenFactGroup::_tempHydroFactName =                 "tempHydro";
+const char* VehicleHydrogenFactGroup::_massUavFactName =                   "massUav";
+const char* VehicleHydrogenFactGroup::_timeLeftFactName =                  "timeLeft";
+
+const char* VehicleHydrogenFactGroup::_settingsGroup =                       "Vehicle.hydrogen";
+
+const double VehicleHydrogenFactGroup::_voltageHydroUnavailable =             -1.0;
+const int    VehicleHydrogenFactGroup::_currentHydroUnavailable =             -1.0;
+const int    VehicleHydrogenFactGroup::_voltageBattUnavailable =              -1.0;
+const int    VehicleHydrogenFactGroup::_pressureHydroUnavailable =            -1.0;
+const double VehicleHydrogenFactGroup::_tempHydroUnavailable =                -1.0;
+const int    VehicleHydrogenFactGroup::_massUavUnavailable =                  -1.0;
+const int    VehicleHydrogenFactGroup::_timeLeftUnavailable =                 -1.0;
+
+VehicleHydrogenFactGroup::VehicleHydrogenFactGroup(QObject* parent)
+    : FactGroup(1000, ":/json/Vehicle/HydrogenFact.json", parent)
+    , _voltageHydroFact                  (0, _voltageHydroFactName,          FactMetaData::valueTypeFloat)
+    , _currentHydroFact                  (0, _currentHydroFactName,          FactMetaData::valueTypeFloat)
+    , _voltageBattFact                   (0, _voltageBattFactName,           FactMetaData::valueTypeFloat)
+    , _pressureHydroFact                 (0, _pressureHydroFactName,         FactMetaData::valueTypeFloat)
+    , _tempHydroFact                     (0, _tempHydroFactName,             FactMetaData::valueTypeFloat)
+    , _massUavFact                       (0, _massUavFactName,               FactMetaData::valueTypeFloat)
+    , _timeLeftFact                       (0, _timeLeftFactName,             FactMetaData::valueTypeElapsedTimeInSeconds)
+{
+    _addFact(&_voltageHydroFact,          _voltageHydroFactName);
+    _addFact(&_currentHydroFact,          _currentHydroFactName);
+    _addFact(&_voltageBattFact,           _voltageBattFactName);
+    _addFact(&_pressureHydroFact,         _pressureHydroFactName);
+    _addFact(&_tempHydroFact,             _tempHydroFactName);
+    _addFact(&_massUavFact,               _massUavFactName);
+    _addFact(&_timeLeftFact,              _timeLeftFactName);
+
+    // Start out as not available
+    _voltageHydroFact.setRawValue            (_voltageHydroUnavailable);
+    _currentHydroFact.setRawValue            (_currentHydroUnavailable);
+    _voltageBattFact.setRawValue             (_voltageBattUnavailable);
+    _pressureHydroFact.setRawValue           (_pressureHydroUnavailable);
+    _tempHydroFact.setRawValue               (_tempHydroUnavailable);
+    _massUavFact.setRawValue                 (_massUavUnavailable);
+    _timeLeftFact.setRawValue                 (_timeLeftUnavailable);
 }

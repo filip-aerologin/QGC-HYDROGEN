@@ -1,0 +1,50 @@
+[
+{
+    "name":             "voltageHydro",
+    "shortDescription": "Voltage H2",
+    "type":             "float",
+    "decimalPlaces":    2,
+    "units":            "V"
+},
+{
+    "name":             "currentHydro",
+    "shortDescription": "Current H2",
+    "type":             "float",
+    "units":            "A"
+},
+{
+    "name":             "voltageBatt",
+    "shortDescription": "Voltage Batt",
+    "type":             "float",
+     "decimalPlaces":    2,
+     "units":            "V"
+},
+{
+    "name":             "pressureHydro",
+    "shortDescription": "Pressure H2",
+    "type":             "float",
+    "decimalPlaces":    2,
+    "units":            "Bar"
+},
+{
+    "name":             "tempHydro",
+    "shortDescription": "Temp H2",
+    "type":             "float",
+    "decimalPlaces":    2,
+    "units":            "K"
+},
+{
+    "name":             "massUav",
+    "shortDescription": "UAV Mass",
+    "type":             "float",
+    "decimalPlaces":    2,
+    "units":            "g"
+}
+,
+{
+    "name":             "timeLeft",
+    "shortDescription": "Time Left",
+    "type":             "elapsedSeconds",
+    "decimalPlaces":    1
+}
+]

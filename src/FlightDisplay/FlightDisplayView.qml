@@ -27,6 +27,10 @@ import QGroundControl.Vehicle       1.0
 import QGroundControl.Controllers   1.0
 import QGroundControl.FactSystem    1.0
 
+import QGroundControl.FactControls  1.0
+
+
+
 /// Flight Display View
 QGCView {
     id:             root
@@ -37,12 +41,14 @@ QGCView {
     property alias  guidedController:   guidedActionsController
 
     property bool activeVehicleJoystickEnabled: _activeVehicle ? _activeVehicle.joystickEnabled : false
+    property var    _activeVehicle: QGroundControl.multiVehicleManager.activeVehicle ? QGroundControl.multiVehicleManager.activeVehicle : QGroundControl.multiVehicleManager.offlineEditingVehicle
+
 
     property var    _planMasterController:  masterController
     property var    _missionController:     _planMasterController.missionController
     property var    _geoFenceController:    _planMasterController.geoFenceController
     property var    _rallyPointController:  _planMasterController.rallyPointController
-    property var    _activeVehicle:         QGroundControl.multiVehicleManager.activeVehicle
+   // property var    _activeVehicle:         QGroundControl.multiVehicleManager.activeVehicle
     property var    _videoReceiver:         QGroundControl.videoManager.videoReceiver
     property bool   _recordingVideo:        _videoReceiver && _videoReceiver.recording
     property bool   _mainIsMap:             QGroundControl.videoManager.hasVideo ? QGroundControl.loadBoolGlobalSetting(_mainIsMapKey,  true) : true
@@ -51,8 +57,12 @@ QGCView {
     property bool   _isPipVisible2:         QGroundControl.videoManager2.hasVideo ? QGroundControl.loadBoolGlobalSetting(_PIPVisibleKey2, true) : false
     property bool   _mainIsVideo1:          false
     property bool   _mainIsVideo2:          false
-    property bool   _trigger1:          false
-    property bool   _trigger2:          false
+    property bool   _trigger1:              false
+    property bool   _trigger2:              false
+    property bool   _hydrogenVisible:       false
+    property bool   _hydrogenStart:         false
+    property bool   _hydrogenCrash:         false
+    property bool   _showPause:             false
     property real   _savedZoomLevel:        0
     property real   _margins:               ScreenTools.defaultFontPixelWidth / 2
     property real   _pipSize:               flightView.width * 0.2
@@ -838,14 +848,14 @@ QGCView {
             anchors.topMargin:  ScreenTools.defaultFontPixelHeight
             anchors.top:        toolStripZoom.bottom
             color:              qgcPal.window
-            visible:            _guidedController.showWifiOff
+            visible:            true
             title:              qsTr("Wifi")
             z:                  QGroundControl.zOrderWidgets
-            showAlternateIcon:  [ false ]
-            rotateImage:        [ false ]
-            animateImage:       [ true  ]
-            buttonEnabled:      [ true  ]
-            buttonVisible:      [ true  ]
+            showAlternateIcon:  [ false, false ]
+            rotateImage:        [ false, false ]
+            animateImage:       [ true , _hydrogenVisible ]
+            buttonEnabled:      [ true , true  ]
+            buttonVisible:      [ _guidedController.showWifiOff, true  ]
             //maxHeight:          mapScale.y - toolStripZoom.y
 
             property bool _showZoom: !ScreenTools.isMobile
@@ -854,8 +864,72 @@ QGCView {
                 {
                     name:               "Search",
                     iconSource:         "/qmlimages/wifi.svg"
+                },
+                {
+                    name:               "Hydro",
+                    iconSource:         "/qmlimages/resources/h.svg"
                 }
+
             ]
+            onClicked: {
+                switch (index) {
+                case 1:
+                    _hydrogenVisible = !_hydrogenVisible
+                    break
+                }
+            }
+        }
+
+        ToolStrip {
+            id:                 toolStripHydro
+            anchors.left:       toolStripZoom.left
+            anchors.topMargin:  ScreenTools.defaultFontPixelHeight
+            anchors.top:        toolStripWifi.bottom
+            color:              qgcPal.window
+            visible:            true
+            title:              qsTr("Hydro Control")
+            z:                  QGroundControl.zOrderWidgets
+            showAlternateIcon:  [ false, false, false  ]
+            rotateImage:        [ false, false, false ]
+            animateImage:       [ _hydrogenStart, _hydrogenStart, _hydrogenCrash ]
+            buttonEnabled:      [ !_showPause , _showPause , true  ]
+            buttonVisible:      [ _hydrogenVisible && !_showPause,  _hydrogenVisible && _showPause, _hydrogenVisible  ]
+
+            property bool _showZoom: !ScreenTools.isMobile
+
+            model: [
+                {
+                    name:               "Start",
+                    iconSource:         "/res/action.svg"
+                },
+                {
+                    name:               "Stop",
+                    iconSource:         "/res/Pause.svg"
+                },
+                {
+                    name:               "Crash",
+                    iconSource:         "/res/crash.svg"
+                }
+
+            ]
+            onClicked: {
+                switch (index) {
+                case 0:
+                        _activeVehicle.startHydro()
+                        _hydrogenStart = !_hydrogenStart
+                        _showPause = !_showPause
+                    break
+                case 1:
+                        _activeVehicle.stopHydro()
+                        _hydrogenStart = !_hydrogenStart
+                        _showPause = !_showPause
+                    break
+                case 2:
+                        _activeVehicle.crashHydro()
+                        _hydrogenCrash = !_hydrogenCrash
+                    break
+                }
+            }
         }
 
         GuidedActionsController {
@@ -930,6 +1004,66 @@ QGCView {
             width:              ScreenTools.defaultFontPixelWidth * 10
             color:              qgcPal.window
             visible:            false
+        }
+    }
+
+
+
+
+
+    Rectangle {
+        id: testRect
+        width: parent.width - (flightView.width * 0.2 * 2) - (ScreenTools.defaultFontPixelHeight * 4)
+        height: flightView.width * 0.2 * (9/16) * 0.4
+        anchors.bottom:  parent.bottom
+        anchors.left: parent.left
+        anchors.leftMargin: flightView.width * 0.2 + ScreenTools.defaultFontPixelHeight * 2
+        anchors.bottomMargin: ScreenTools.defaultFontPixelHeight * 2.5
+        opacity: 1
+        color: qgcPal.window
+        visible: _hydrogenVisible
+                    Loader {
+                        id:                 _loader
+
+                        anchors.left:       parent.left
+                        anchors.right:      parent.right
+                        sourceComponent:    factGroupList
+
+                        property var factGroup:     _activeVehicle.hydrogen
+                        property var factGroupName: "hydrogen"
+                    }
+            Component {
+                id: factGroupList//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                Row{
+                    //anchors.fill: parent.fill
+                    anchors.left:             parent.left
+                    anchors.leftMargin:       _panel.width/50
+                    anchors.top:              parent.top
+                    anchors.topMargin:        _panel.width/120
+                    spacing: ScreenTools.defaultFontPixelWidth * 4
+                Repeater {
+                    model: factGroup.factNames
+                    Column {
+                        QGCLabel {
+                            id:                     _addCheckBox
+                            text:                   factGroup.getFact(modelData).shortDescription + (factGroup.getFact(modelData).units ? " (" + factGroup.getFact(modelData).units + ")" : "")
+                            font.pointSize:          (_panel.width - (flightView.width * 0.2 * 2) - (ScreenTools.defaultFontPixelHeight * 4))/90
+                            anchors.horizontalCenter: parent.horizontalCenter
+
+                        }
+
+                        QGCLabel {
+                            id:                     _addCheckBox2
+                            anchors.top:            factGroupList.bottom
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text:                   factGroup.getFact(modelData).enumOrValueString
+                            font.pointSize:         (_panel.width - (flightView.width * 0.2 * 2) - (ScreenTools.defaultFontPixelHeight * 4))/75
+
+
+                        }
+                    }
+                }
+            }
         }
     }
 }

@@ -46,14 +46,14 @@
         <file alias="Airframe/HelicopterCoaxial">src/AutoPilotPlugins/Common/Images/HelicopterCoaxial.svg</file>
         <file alias="wifi.svg">src/AutoPilotPlugins/Common/Images/wifi.svg</file>
         <file alias="arrow-down.png">src/QmlControls/arrow-down.png</file>
-		<file alias="camera.svg">resources/camera.svg</file>
+        <file alias="camera.svg">resources/camera.svg</file>
         <file alias="camera_photo.svg">src/Camera/images/camera_photo.svg</file>
         <file alias="camera_video.svg">src/Camera/images/camera_video.svg</file>
         <file alias="check.png">src/QmlControls/check.png</file>
         <file alias="FirmwareUpgradeIcon.png">src/VehicleSetup/FirmwareUpgradeIcon.png</file>
-		<file alias="FirmwareUpgradeIcon.svg">src/VehicleSetup/FirmwareUpgradeIcon.svg</file>
+        <file alias="FirmwareUpgradeIcon.svg">src/VehicleSetup/FirmwareUpgradeIcon.svg</file>
         <file alias="FlightModesComponentIcon.png">src/AutoPilotPlugins/PX4/Images/FlightModesComponentIcon.png</file>
-		<file alias="FlightModesComponentIcon.svg">src/AutoPilotPlugins/PX4/Images/FlightModesComponentIcon.svg</file>
+        <file alias="FlightModesComponentIcon.svg">src/AutoPilotPlugins/PX4/Images/FlightModesComponentIcon.svg</file>
         <file alias="CameraTrigger.svg">src/AutoPilotPlugins/PX4/Images/CameraTrigger.svg</file>
         <file alias="CameraComponentIcon.png">src/AutoPilotPlugins/PX4/Images/CameraComponentIcon.png</file>
         <file alias="DatalinkLoss.svg">src/AutoPilotPlugins/PX4/Images/DatalinkLoss.svg</file>
@@ -111,15 +111,11 @@
         <file alias="compassInstrumentArrow.svg">src/FlightMap/Images/compassInstrumentArrow.svg</file>
         <file alias="compassInstrumentDial.svg">src/FlightMap/Images/compassInstrumentDial.svg</file>
         <file alias="crossHair.svg">src/FlightMap/Images/crossHair.svg</file>
-
         <file alias="PiP.svg">src/FlightMap/Images/PiP.svg</file>
-		<file alias="PiP_inv.svg">src/FlightMap/Images/PiP_inv.svg</file>
-
+        <file alias="PiP_inv.svg">src/FlightMap/Images/PiP_inv.svg</file>
         <file alias="pipResize.svg">src/FlightMap/Images/pipResize.svg</file>
-		<file alias="pipResize_inv.svg">src/FlightMap/Images/pipResize_inv.svg</file>
-
-		<file alias="Drone.svg">src/FlightMap/Images/Drone.svg</file>
-
+        <file alias="pipResize_inv.svg">src/FlightMap/Images/pipResize_inv.svg</file>
+        <file alias="Drone.svg">src/FlightMap/Images/Drone.svg</file>
         <file alias="rollDialWhite.svg">src/FlightMap/Images/rollDialWhite.svg</file>
         <file alias="rollPointerWhite.svg">src/FlightMap/Images/rollPointerWhite.svg</file>
         <file alias="scale.png">src/FlightMap/Images/scale.png</file>
@@ -157,15 +153,12 @@
         <file alias="Hamburger.svg">src/ui/toolbar/Images/Hamburger.svg</file>
         <file alias="Megaphone.svg">src/ui/toolbar/Images/Megaphone.svg</file>
         <file alias="PaperPlane.svg">src/ui/toolbar/Images/PaperPlane.svg</file>
-
-		<file alias="PaperPlaneBlack.svg">src/ui/toolbar/Images/PaperPlaneBlack.svg</file>
-		<file alias="PaperPlaneWhite.svg">src/ui/toolbar/Images/PaperPlaneWhite.svg</file>
-
-		<file alias="DroneSettings.svg">src/ui/toolbar/Images/DroneSettings.svg</file>
-		<file alias="Map.svg">src/ui/toolbar/Images/Map.svg</file>
-		<file alias="Quadnew.svg">src/ui/toolbar/Images/Quadnew.svg</file>
-		<file alias="Settingss.svg">src/ui/toolbar/Images/Settingss.svg</file>
-
+        <file alias="PaperPlaneBlack.svg">src/ui/toolbar/Images/PaperPlaneBlack.svg</file>
+        <file alias="PaperPlaneWhite.svg">src/ui/toolbar/Images/PaperPlaneWhite.svg</file>
+        <file alias="DroneSettings.svg">src/ui/toolbar/Images/DroneSettings.svg</file>
+        <file alias="Map.svg">src/ui/toolbar/Images/Map.svg</file>
+        <file alias="Quadnew.svg">src/ui/toolbar/Images/Quadnew.svg</file>
+        <file alias="Settingss.svg">src/ui/toolbar/Images/Settingss.svg</file>
         <file alias="Plan.svg">src/ui/toolbar/Images/Plan.svg</file>
         <file alias="Quad.svg">src/ui/toolbar/Images/Quad.svg</file>
         <file alias="RC.svg">src/ui/toolbar/Images/RC.svg</file>
@@ -189,10 +182,9 @@
         <file alias="APM/BrandImageSub">src/FirmwarePlugin/APM/APMBrandImageSub.png</file>
         <file alias="PX4/BrandImage">src/FirmwarePlugin/PX4/PX4BrandImage.png</file>
         <file alias="subVehicleArrowOpaque.png">src/FlightMap/Images/sub.png</file>
-
-		<file alias="UAVS/BrandIndoor">src/FirmwarePlugin/UAVS/UAVSIndoor.png</file>
-		<file alias="UAVS/BrandOutdoor">src/FirmwarePlugin/UAVS/UAVSOutdoor.png</file>
-
+        <file alias="UAVS/BrandIndoor">src/FirmwarePlugin/UAVS/UAVSIndoor.png</file>
+        <file alias="UAVS/BrandOutdoor">src/FirmwarePlugin/UAVS/UAVSOutdoor.png</file>
+        <file>resources/h.svg</file>
     </qresource>
     <qresource prefix="/res">
         <file alias="action.svg">resources/action.svg</file>
@@ -202,6 +194,7 @@
         <file alias="ArrowRight.svg">resources/ArrowRight.svg</file>
         <file alias="buttonLeft.svg">resources/buttonLeft.svg</file>
         <file alias="buttonRight.svg">resources/buttonRight.svg</file>
+        <file alias="crash.svg">resources/crash.svg</file>
         <file alias="cancel.svg">resources/cancel.svg</file>
         <file alias="gear-black.svg">resources/gear-black.svg</file>
         <file alias="gear-white.svg">resources/gear-white.svg</file>
@@ -214,7 +207,7 @@
         <file alias="Play">resources/Play.svg</file>
         <file alias="PowerButton">resources/PowerButton.svg</file>
         <file alias="QGCLogoBlack">resources/QGCLogoBlack.svg</file>
-		<file alias="QGCLogoFull">resources/QGCLogoFull.svg</file>
+        <file alias="QGCLogoFull">resources/QGCLogoFull.svg</file>
         <file alias="QGCLogoWhite">resources/QGCLogoWhite.svg</file>
         <file alias="QGroundControlConnect">resources/QGroundControlConnect.svg</file>
         <file alias="rtl.svg">resources/rtl.svg</file>
@@ -230,6 +223,8 @@
         <file alias="XDelete.svg">resources/XDelete.svg</file>
         <file alias="XDeleteBlack.svg">resources/XDeleteBlack.svg</file>
         <file>resources/icons/qgroundcontrol.ico</file>
+        <file>resources/h.svg</file>
+        <file>resources/crash.svg</file>
     </qresource>
     <qresource prefix="/res/firmware">
         <file alias="px4.png">resources/firmware/px4.png</file>

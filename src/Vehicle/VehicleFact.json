@@ -73,7 +73,9 @@
     "name":             "flightTime",
     "shortDescription": "Flight Time",
     "type":             "elapsedSeconds",
-    "decimalPlaces":    1
+    "decimalPlaces":    0,
+    "unites":          "sec",
+    "default":         "0"
 },
 {
     "name":             "wifiStrength",

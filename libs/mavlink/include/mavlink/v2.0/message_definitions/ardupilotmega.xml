@@ -1318,6 +1318,26 @@
       <field type="float" name="rpm1">RPM Sensor1</field>
       <field type="float" name="rpm2">RPM Sensor2</field>
     </message>
+
+	<!-- HYDROGEN MESSAGES -->
+ 	<message id="225" name="HYDROGEN">
+      <description>Hydrogen indicators</description>
+     	<field type="float" name="stack_temp">Stack temp</field>
+	<field type="float" name="battery_voltage">Battery voltage</field>
+	<field type="float" name="stack_current">Stack current</field>
+	<field type="float" name="tank_pressure">Tank pressure</field>
+	<field type="float" name="stack_voltage">Stack voltage</field>
+	<field type="float" name="uav_mass">UAV mass</field>
+    </message>
+
+    <message id="228" name="HYDROGEN_CONTROL">
+      	<description>Hydrogen control</description>
+	<field type="uint8_t" name="system_crash">System crash</field>
+	<field type="uint8_t" name="start_hydro">Start hydro</field>
+    </message>
+
+
+
     <!-- ardupilot specific mavlink2 messages starting at 11000-->
     <message id="11000" name="DEVICE_OP_READ">
       <description>Read registers for a device</description>

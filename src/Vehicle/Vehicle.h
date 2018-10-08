@@ -220,6 +220,58 @@ private:
     Fact            _temperature3Fact;
 };
 
+class VehicleHydrogenFactGroup : public FactGroup
+{
+    Q_OBJECT
+
+public:
+    VehicleHydrogenFactGroup(QObject* parent = NULL);
+
+    Q_PROPERTY(Fact* voltageHydro     READ voltageHydro    CONSTANT)
+    Q_PROPERTY(Fact* currentHydro     READ currentHydro    CONSTANT)
+    Q_PROPERTY(Fact* voltageBatt      READ voltageBatt     CONSTANT)
+    Q_PROPERTY(Fact* pressureHydro    READ pressureHydro   CONSTANT)
+    Q_PROPERTY(Fact* tempHydro        READ tempHydro       CONSTANT)
+    Q_PROPERTY(Fact* massUav          READ massUav         CONSTANT)
+    Q_PROPERTY(Fact* timeLeft         READ timeLeft        CONSTANT)
+
+    Fact* voltageHydro                (void) { return &_voltageHydroFact; }
+    Fact* currentHydro                (void) { return &_currentHydroFact; }
+    Fact* voltageBatt                 (void) { return &_voltageBattFact; }
+    Fact* pressureHydro               (void) { return &_pressureHydroFact; }
+    Fact* tempHydro                   (void) { return &_tempHydroFact; }
+    Fact* massUav                     (void) { return &_massUavFact; }
+    Fact* timeLeft                    (void) { return &_timeLeftFact; }
+
+
+    static const char* _voltageHydroFactName;
+    static const char* _currentHydroFactName;
+    static const char* _voltageBattFactName;
+    static const char* _pressureHydroFactName;
+    static const char* _tempHydroFactName;
+    static const char* _massUavFactName;
+    static const char* _timeLeftFactName;
+
+    static const char* _settingsGroup;
+
+    static const double _voltageHydroUnavailable;
+    static const int    _currentHydroUnavailable;
+    static const int    _voltageBattUnavailable;
+    static const int    _pressureHydroUnavailable;
+    static const double _tempHydroUnavailable;
+    static const int    _massUavUnavailable;
+    static const int    _timeLeftUnavailable;
+
+private:
+    Fact            _voltageHydroFact;
+    Fact            _currentHydroFact;
+    Fact            _voltageBattFact;
+    Fact            _pressureHydroFact;
+    Fact            _tempHydroFact;
+    Fact            _massUavFact;
+    Fact            _timeLeftFact;
+};
+
 class Vehicle : public FactGroup
 {
     Q_OBJECT
@@ -354,6 +406,7 @@ public:
     Q_PROPERTY(FactGroup* wind        READ windFactGroup        CONSTANT)
     Q_PROPERTY(FactGroup* vibration   READ vibrationFactGroup   CONSTANT)
     Q_PROPERTY(FactGroup* temperature READ temperatureFactGroup CONSTANT)
+    Q_PROPERTY(FactGroup* hydrogen    READ hydrogenFactGroup    CONSTANT)
 
     Q_PROPERTY(int      firmwareMajorVersion        READ firmwareMajorVersion       NOTIFY firmwareVersionChanged)
     Q_PROPERTY(int      firmwareMinorVersion        READ firmwareMinorVersion       NOTIFY firmwareVersionChanged)
@@ -433,6 +486,11 @@ public:
 
     /// Wifi Messages
     Q_INVOKABLE void resumeWifi(void);
+
+    ///Hydro Messages
+    Q_INVOKABLE void startHydro(void);
+    Q_INVOKABLE void stopHydro(void);
+    Q_INVOKABLE void crashHydro(void);
 
 #if 0
     // Temporarily removed, waiting for new command implementation
@@ -635,6 +693,7 @@ public:
     FactGroup* windFactGroup        (void) { return &_windFactGroup; }
     FactGroup* vibrationFactGroup   (void) { return &_vibrationFactGroup; }
     FactGroup* temperatureFactGroup (void) { return &_temperatureFactGroup; }
+    FactGroup* hydrogenFactGroup    (void) { return &_hydrogenFactGroup; }
 
     void setConnectionLostEnabled(bool connectionLostEnabled);
 
@@ -908,6 +967,9 @@ private:
     void _setupAutoDisarmSignalling(void);
     void _setCapabilities(uint64_t capabilityBits);
     void _handleWifi(mavlink_message_t& message);
+    void _handleHydro(mavlink_message_t& message);
+    void _handleHydroControl(mavlink_message_t& message);
+
 
     int     _id;                    ///< Mavlink system id
     int     _defaultComponentId;
@@ -1097,6 +1159,7 @@ private:
     VehicleWindFactGroup        _windFactGroup;
     VehicleVibrationFactGroup   _vibrationFactGroup;
     VehicleTemperatureFactGroup _temperatureFactGroup;
+    VehicleHydrogenFactGroup    _hydrogenFactGroup;
 
     static const char* _rollFactName;
     static const char* _pitchFactName;
@@ -1116,6 +1179,7 @@ private:
     static const char* _windFactGroupName;
     static const char* _vibrationFactGroupName;
     static const char* _temperatureFactGroupName;
+    static const char* _hydrogenFactGroupName;
 
     static const int _vehicleUIUpdateRateMSecs = 100;
 
